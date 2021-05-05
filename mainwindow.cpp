@@ -63,7 +63,7 @@ GPContext* MainWindow::sample_create_context() {
 }
 
 
-
+//
 void MainWindow::on_pushButton_clicked()
 {
     GetCameraInfor();
