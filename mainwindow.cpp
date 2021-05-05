@@ -9,13 +9,21 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->pushButton->setText("Kết nối camera");
-    ui->pushButton_disconnectcamera->setText("Ngắt kết nối camera");
+    ui->pushButton_disconnectcamera->setText("Start");
+
+    ui->labelImage->setBackgroundRole(QPalette::Base);
+    ui->labelImage->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Ignored);
+    ui->labelImage->setScaledContents(true);
+
+    ui->scrollArea->setBackgroundRole(QPalette::Dark);
+    ui->scrollArea->setVisible(false);
 
     // before connect camera
     // this process have to be killed: /usr/lib/gvfs/gvfsd-gphoto2
     // we will disable this from system, not inside this program
     //GetCameraInfor();
-
+    context = sample_create_context();
+    gp_camera_new(&camera);
 
 }
 
@@ -112,6 +120,8 @@ void MainWindow::GetCameraInfor()
             //                printf("Owner: %s\n", owner);
             //                free (owner);
             //            }
+
+
             gp_camera_exit (camera, context);
             gp_camera_free (camera);
             gp_context_unref (context);
@@ -120,6 +130,84 @@ void MainWindow::GetCameraInfor()
 }
 void MainWindow::on_pushButton_disconnectcamera_clicked()
 {
-
+    CapturePreview();
     //QCoreApplication::quit();
+}
+
+void MainWindow::CapturePreview()
+{
+    int	retval;
+    int	capturecnt = 0;
+
+    retval = gp_camera_init(camera, context);
+    if (retval != GP_OK) {
+        qDebug("  Retval: %d\n", retval);
+        exit (1);
+    }
+    //while (1)
+    {
+        CameraFile *file;
+        char output_file[32];
+
+        /*
+             * Capture a preview on every loop. Save as preview.jpg.
+             */
+        retval = gp_file_new(&file);
+        if (retval != GP_OK) {
+            qDebug("gp_file_new: %d\n", retval);
+            exit(1);
+        }
+
+        retval = gp_camera_capture_preview(camera, file, context);
+        if (retval != GP_OK) {
+            qDebug("gp_camera_capture_preview failed: %d\n", retval);
+            //exit(1);
+        }
+        retval = gp_file_save(file, PREVIEW);
+        if (retval != GP_OK) {
+            qDebug("saving preview failed: %d\n", retval);
+            exit(1);
+        }
+        loadFile(PREVIEW);
+        gp_file_unref(file);
+
+    }
+    gp_camera_exit(camera, context);
+}
+
+void MainWindow::setImage(const QImage &newImage)
+{
+    image = newImage;
+    if (image.colorSpace().isValid())
+        image.convertToColorSpace(QColorSpace::SRgb);
+    ui->labelImage->setPixmap(QPixmap::fromImage(image));
+//! [4]
+    scaleFactor = 1.0;
+
+    ui->scrollArea->setVisible(true);
+
+}
+
+bool MainWindow::loadFile(const QString &fileName)
+{
+    QImageReader reader(fileName);
+    reader.setAutoTransform(true);
+    const QImage newImage = reader.read();
+    if (newImage.isNull()) {
+//        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
+//                                 tr("Cannot load %1: %2")
+//                                 .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
+
+        return false;
+    }
+//! [2]
+
+    setImage(newImage);
+
+    //setWindowFilePath(fileName);
+
+    const QString message = tr("Opened \"%1\", %2x%3, Depth: %4")
+        .arg(QDir::toNativeSeparators(fileName)).arg(image.width()).arg(image.height()).arg(image.depth());
+    statusBar()->showMessage(message);
+    return true;
 }

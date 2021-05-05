@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>2048</width>
-    <height>800</height>
+    <height>1024</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -17,8 +17,8 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>80</y>
+      <x>30</x>
+      <y>30</y>
       <width>231</width>
       <height>81</height>
      </rect>
@@ -35,51 +35,18 @@
    <widget class="QTextEdit" name="textEdit">
     <property name="geometry">
      <rect>
-      <x>370</x>
-      <y>40</y>
-      <width>571</width>
-      <height>471</height>
+      <x>30</x>
+      <y>250</y>
+      <width>561</width>
+      <height>711</height>
      </rect>
-    </property>
-   </widget>
-   <widget class="QDateEdit" name="dateEdit">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>420</y>
-      <width>361</width>
-      <height>81</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>16</pointsize>
-     </font>
-    </property>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>60</x>
-      <y>320</y>
-      <width>181</width>
-      <height>51</height>
-     </rect>
-    </property>
-    <property name="font">
-     <font>
-      <pointsize>20</pointsize>
-     </font>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
     </property>
    </widget>
    <widget class="QPushButton" name="pushButton_disconnectcamera">
     <property name="geometry">
      <rect>
-      <x>60</x>
-      <y>210</y>
+      <x>30</x>
+      <y>150</y>
       <width>231</width>
       <height>81</height>
      </rect>
@@ -92,6 +59,42 @@
     <property name="text">
      <string>Nhấn nút bắt đầu</string>
     </property>
+   </widget>
+   <widget class="QScrollArea" name="scrollArea">
+    <property name="geometry">
+     <rect>
+      <x>610</x>
+      <y>0</y>
+      <width>1331</width>
+      <height>971</height>
+     </rect>
+    </property>
+    <property name="widgetResizable">
+     <bool>true</bool>
+    </property>
+    <widget class="QWidget" name="scrollAreaWidgetContents">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>1329</width>
+       <height>969</height>
+      </rect>
+     </property>
+     <widget class="QLabel" name="labelImage">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>10</y>
+        <width>1311</width>
+        <height>941</height>
+       </rect>
+      </property>
+      <property name="text">
+       <string>TextLabel</string>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
