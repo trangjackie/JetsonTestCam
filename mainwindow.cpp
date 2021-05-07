@@ -24,12 +24,82 @@ MainWindow::MainWindow(QWidget *parent)
     //GetCameraInfor();
     context = sample_create_context();
     gp_camera_new(&camera);
+    /* This call will autodetect cameras, take the
+         * first one from the list and use it. It will ignore
+         * any others... See the *multi* examples on how to
+         * detect and use more than the first one.
+         */
+    int ret = gp_camera_init (camera, context);
+    if (ret < GP_OK) {
+        ui->textEdit->insertPlainText("No camera auto detected.");
+        qDebug("No camera auto detected.");
+        gp_camera_free (camera);
+        gp_context_unref (context);
+        camera = nullptr;
+    }
 
+    timer = new QTimer(this);
+    timer->setInterval(75); // 10 fps = 100ms
+    connect(timer, SIGNAL(timeout()), this, SLOT(CapturePreview()));
+
+
+    __jsonConfig =
+        "{"
+        "\"debug_level\": \"info\","
+        "\"debug_write_input_image_enabled\": false,"
+        "\"debug_internal_data_path\": \".\","
+        ""
+        "\"num_threads\": -1,"
+        "\"gpgpu_enabled\": true,"
+        "\"openvino_enabled\": true,"
+        "\"openvino_device\": \"GPU\","
+        ""
+        "\"detect_roi\": [0, 0, 0, 0],"
+        "\"detect_minscore\": 0.1,"
+        ""
+        "\"pyramidal_search_enabled\": true,"
+        "\"pyramidal_search_sensitivity\": 0.28,"
+        "\"pyramidal_search_minscore\": 0.3,"
+        "\"pyramidal_search_min_image_size_inpixels\": 800,"
+        ""
+        "\"klass_lpci_enabled\": true,"
+        "\"klass_vcr_enabled\": true,"
+        "\"klass_vmm_enabled\": true,"
+        ""
+        "\"recogn_minscore\": 0.3,"
+        "\"recogn_score_type\": \"min\""
+        ""
+        ",\"assets_folder\": \"/home/trang/Projects/Test/assets\""
+        ",\"charset\": \"latin\""
+        "}";
+
+    // Local variable
+    UltAlprSdkResult result;
+
+    // Initialize the engine (should be done once)
+    ULTALPR_SDK_ASSERT((result = UltAlprSdkEngine::init(
+                __jsonConfig
+                )).isOK());
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+
+    //
+    gp_camera_exit(camera, context);
+    gp_camera_free(camera);
+    gp_context_unref(context);
+    context = NULL;
+    gp_camera_unref(camera);
+    camera = NULL;
+
+
+    // DeInit
+    // Call this function before exiting the app to free the allocate resources
+    // You must not call process() after calling this function
+    UltAlprSdkResult result;
+    ULTALPR_SDK_ASSERT((result = UltAlprSdkEngine::deInit()).isOK());
 }
 
 
@@ -82,73 +152,40 @@ void MainWindow::GetCameraInfor()
     int		ret;
     CameraText	text;
     ui->textEdit->clear();
-    // try gphoto2
-    //int		retval, nrcapture = 0;
-    //struct timeval	tval;
-    context = sample_create_context();
 
-    //gp_log_add_func(GP_LOG_ERROR, errordumper, NULL);
-    /*gp_log_add_func(GP_LOG_DATA, errordumper, NULL); */
-    gp_camera_new(&camera);
-    /* This call will autodetect cameras, take the
-         * first one from the list and use it. It will ignore
-         * any others... See the *multi* examples on how to
-         * detect and use more than the first one.
-         */
-    ret = gp_camera_init (camera, context);
+    /* Simple query the camera summary text */
+    ret = gp_camera_get_summary (camera, &text, context);
     if (ret < GP_OK) {
-        ui->textEdit->insertPlainText("No camera auto detected.");
-        qDebug("No camera auto detected.");
+        ui->textEdit->insertPlainText("Camera failed retrieving summary.\n");
         gp_camera_free (camera);
     }
     else
     {
-        /* Simple query the camera summary text */
-        ret = gp_camera_get_summary (camera, &text, context);
-        if (ret < GP_OK) {
-            ui->textEdit->insertPlainText("Camera failed retrieving summary.\n");
-            gp_camera_free (camera);
-        }
-        else
-        {
-            QString str = QString("Summary:\n%1\n").arg( text.text);
-            ui->textEdit->insertPlainText(str);
-            qDebug("Summary:\n%s\n",text.text);
-            /* Simple query of a string configuration variable. */
-            //            ret = get_config_value_string (camera, "owner", &owner, context);
-            //            if (ret >= GP_OK) {
-            //                printf("Owner: %s\n", owner);
-            //                free (owner);
-            //            }
-
-
-            gp_camera_exit (camera, context);
-            gp_camera_free (camera);
-            gp_context_unref (context);
-        }
+        QString str = QString("Summary:\n%1\n").arg( text.text);
+        ui->textEdit->insertPlainText(str);
+        qDebug("Summary:\n%s\n",text.text);
     }
 }
 void MainWindow::on_pushButton_disconnectcamera_clicked()
 {
-    CapturePreview();
+    imgType = 0;
+    timer->start();
     //QCoreApplication::quit();
 }
 
 void MainWindow::CapturePreview()
 {
+    // entangle_camera_begin_job(cam);
+    // err = gp_camera_capture_preview(cam->cam, datafile, cam->ctx);
+    // entangle_camera_end_job(cam);
     int	retval;
     int	capturecnt = 0;
 
-    retval = gp_camera_init(camera, context);
-    if (retval != GP_OK) {
-        qDebug("  Retval: %d\n", retval);
-        exit (1);
-    }
+
     //while (1)
     {
         CameraFile *file;
         char output_file[32];
-
         /*
              * Capture a preview on every loop. Save as preview.jpg.
              */
@@ -168,11 +205,18 @@ void MainWindow::CapturePreview()
             qDebug("saving preview failed: %d\n", retval);
             exit(1);
         }
-        loadFile(PREVIEW);
-        gp_file_unref(file);
+        //
+        if (imgType==0)
+            loadFileAlpr();
+        else if (imgType==1)
+            loadFileCVCuda();
+        else if (imgType==2)
+            loadFileCV();
+        else if (imgType==3)
+            loadFile(PREVIEW);
 
+        gp_file_unref(file);
     }
-    gp_camera_exit(camera, context);
 }
 
 void MainWindow::setImage(const QImage &newImage)
@@ -181,7 +225,7 @@ void MainWindow::setImage(const QImage &newImage)
     if (image.colorSpace().isValid())
         image.convertToColorSpace(QColorSpace::SRgb);
     ui->labelImage->setPixmap(QPixmap::fromImage(image));
-//! [4]
+    //! [4]
     scaleFactor = 1.0;
 
     ui->scrollArea->setVisible(true);
@@ -194,20 +238,165 @@ bool MainWindow::loadFile(const QString &fileName)
     reader.setAutoTransform(true);
     const QImage newImage = reader.read();
     if (newImage.isNull()) {
-//        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
-//                                 tr("Cannot load %1: %2")
-//                                 .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
+        //        QMessageBox::information(this, QGuiApplication::applicationDisplayName(),
+        //                                 tr("Cannot load %1: %2")
+        //                                 .arg(QDir::toNativeSeparators(fileName), reader.errorString()));
 
         return false;
     }
-//! [2]
+    //! [2]
 
     setImage(newImage);
 
     //setWindowFilePath(fileName);
 
     const QString message = tr("Opened \"%1\", %2x%3, Depth: %4")
-        .arg(QDir::toNativeSeparators(fileName)).arg(image.width()).arg(image.height()).arg(image.depth());
+            .arg(QDir::toNativeSeparators(fileName)).arg(image.width()).arg(image.height()).arg(image.depth());
     statusBar()->showMessage(message);
     return true;
 }
+
+bool MainWindow::loadFileAlpr()
+{
+    QImageReader reader(PREVIEW);
+    reader.setAutoTransform(true);
+    const QImage newImage = reader.read();
+    if (newImage.isNull()) {
+
+        return false;
+    }
+
+    testALPR();
+
+    setImage(newImage);
+
+    return true;
+}
+
+bool MainWindow::loadFileCV()
+{
+    cv::Mat img;
+    img = cv::imread(PREVIEW);
+    ui->labelImage->setPixmap(QPixmap::fromImage(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_BGR888)));
+    ui->scrollArea->setVisible(true);
+    return true;
+}
+bool MainWindow::loadFileCVCuda()
+{
+    cv::Mat img;
+    img = cv::imread(PREVIEW, cv::IMREAD_GRAYSCALE);
+    cv::cuda::GpuMat dst, src;
+    src.upload(img);
+    //cv::Ptr<cv::cuda::CLAHE> ptr_clahe = cv::cuda::createCLAHE(5.0, cv::Size(8, 8));
+    //ptr_clahe->apply(src, dst);
+    //cv::cuda::cvtColor(src, dst, cv::COLOR_BGR2GRAY);
+    cv::Ptr<cv::cuda::Filter> gaussianFilter = cv::cuda::createGaussianFilter(src.type(),
+                                                                              src.type(),
+                                                                              cv::Size(7, 7),
+                                                                              0);
+    gaussianFilter->apply(src, src);
+    cv::Ptr<cv::cuda::CannyEdgeDetector> cannyFilter = cv::cuda::createCannyEdgeDetector(50, 100);
+    cannyFilter->detect(src, dst);
+    cv::Mat result;
+    dst.download(img);
+
+    ui->labelImage->setPixmap(QPixmap::fromImage(QImage(img.data, img.cols, img.rows, img.step, QImage::Format_Grayscale8)));
+    ui->scrollArea->setVisible(true);
+    return true;
+}
+
+void MainWindow::on_pushButton_CameraReconnect_clicked()
+{
+    //    gp_camera_exit(camera, context);
+    //    gp_camera_free(camera);
+    //    gp_context_unref(context);
+    //    context = NULL;
+    //    gp_camera_unref(camera);
+    //    camera = NULL;
+
+    context = sample_create_context();
+    gp_camera_new(&camera);
+
+    int ret = gp_camera_init (camera, context);
+    if (ret < GP_OK) {
+        ui->textEdit->insertPlainText("No camera auto detected.");
+        qDebug("No camera auto detected.");
+        gp_camera_free (camera);
+        gp_context_unref (context);
+        camera = nullptr;
+    }
+}
+
+void MainWindow::on_pushButton_disconnectcamera_2_released()
+{
+    if (imgType<3)
+        imgType += 1;
+    else
+        imgType = 0;
+    QString str = QString("PMode (%1)").arg(imgType);
+    ui->pushButton_disconnectcamera_2->setText(str);
+    timer->start();
+}
+
+void MainWindow::testALPR()
+{
+    // local variables
+    UltAlprSdkResult result;
+
+    std::string pathFileImage;
+
+    // Parsing args
+    std::map<std::string, std::string > args;
+    //    if (!alprParseArgs(argc, argv, args)) {
+    //        printUsage();
+    //        return -1;
+    //    }
+
+    pathFileImage = PREVIEW;
+
+    // Decode image
+    AlprFile fileImage;
+    if (!alprDecodeFile(pathFileImage, fileImage)) {
+        qDebug("Failed to read image file: %s", pathFileImage.c_str());
+    }
+    else
+    {
+        // Recognize/Process
+        // We load the models when this function is called for the first time. This make the first inference slow.
+        // Use benchmark application to compute the average inference time: https://github.com/DoubangoTelecom/ultimateALPR-SDK/tree/master/samples/c%2B%2B/benchmark
+        ULTALPR_SDK_ASSERT((result = UltAlprSdkEngine::process(
+                    fileImage.type, // If you're using data from your camera then, the type would be YUV-family instead of RGB-family. https://www.doubango.org/SDKs/anpr/docs/cpp-api.html#_CPPv4N15ultimateAlprSdk22ULTALPR_SDK_IMAGE_TYPEE
+                    fileImage.uncompressedData,
+                    fileImage.width,
+                    fileImage.height
+                    )).isOK());
+        //qDebug("Processing done.");
+        // Print latest result
+        const std::string& json_ = result.json();
+        if (!json_.empty())
+        {
+            //qDebug("result: %s", json_.c_str());
+            // "text":"29E23576*","
+            std::string str = json_.c_str();
+            std::size_t pos = str.find("text\":\"");      // position of "text":"" in str
+
+            //if ((pos>0)&&(str.size()>pos+18))
+            if (((int)pos)>0)
+            {
+                //qDebug("pos: %d",pos);
+                std::string str2 = str.substr(pos, pos+17);     // get from "live" to the end
+                std::size_t npos = str2.find("\",\""); // position of ","
+
+                std::string str3 = str2.substr(7, (int)npos-7);
+                qDebug("Number: %s", str3.c_str());
+                ui->lineEdit_LPN->clear();
+                ui->lineEdit_LPN->setText(str3.c_str());
+            }
+
+        }
+    }
+
+
+
+}
+
