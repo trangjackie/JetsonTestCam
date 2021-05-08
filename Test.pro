@@ -10,12 +10,14 @@ QMAKE_LFLAGS += -Wl,-rpath,"'$$ORIGIN'"
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    imagethread.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     alpr_utils.h \
     alpr_utils.h \
+    imagethread.h \
     mainwindow.h \
     stb_image.h
     stb_image.h

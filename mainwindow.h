@@ -6,6 +6,7 @@
 #include <QDir>
 #include <QImageReader>
 #include <QTimer>
+#include <QThread>
 
 #include <gphoto2.h>
 #include <gphoto2-camera.h>
@@ -27,6 +28,8 @@
 #include <ultimateALPR-SDK-API-PUBLIC.h>
 #include "alpr_utils.h"
 
+#include "imagethread.h"
+
 #define PREVIEW		"preview.jpg"
 
 //using namespace ultimateAlprSdk;
@@ -47,6 +50,8 @@ public:
     GPContext* sample_create_context(void);
     void GetCameraInfor();
 
+    void InitALPR_SDK();
+
 private slots:
     void on_pushButton_clicked();
 
@@ -55,6 +60,8 @@ private slots:
     void on_pushButton_CameraReconnect_clicked();
 
     void on_pushButton_disconnectcamera_2_released();
+
+    void setTextbox(QString res);
 
 private:
     Ui::MainWindow *ui;
@@ -68,6 +75,7 @@ private:
     bool loadFileCV();
     bool loadFileCVCuda();
     void testALPR();
+    void testALPR2(QImage imgIn);
     QTimer *timer;
 
     float CONFIDENCE_THRESHOLD = 0;
@@ -80,5 +88,9 @@ private:
     int imgType = 0;
 
      char* __jsonConfig;
+     bool ALPRSDK_inited = false;
+
+     ImageThread thread;
+
 };
 #endif // MAINWINDOW_H
