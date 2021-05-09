@@ -36,9 +36,9 @@
     <property name="geometry">
      <rect>
       <x>30</x>
-      <y>340</y>
+      <y>720</y>
       <width>561</width>
-      <height>631</height>
+      <height>251</height>
      </rect>
     </property>
    </widget>
@@ -65,8 +65,8 @@
      <rect>
       <x>610</x>
       <y>0</y>
-      <width>1331</width>
-      <height>971</height>
+      <width>960</width>
+      <height>720</height>
      </rect>
     </property>
     <property name="widgetResizable">
@@ -77,8 +77,8 @@
       <rect>
        <x>0</x>
        <y>0</y>
-       <width>1329</width>
-       <height>969</height>
+       <width>958</width>
+       <height>718</height>
       </rect>
      </property>
      <widget class="QLabel" name="labelImage">
@@ -86,8 +86,8 @@
        <rect>
         <x>0</x>
         <y>10</y>
-        <width>1311</width>
-        <height>941</height>
+        <width>931</width>
+        <height>671</height>
        </rect>
       </property>
       <property name="text">
@@ -165,6 +165,32 @@
     </property>
     <property name="text">
      <string>Biển kiểm soát</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_plate">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>330</y>
+      <width>561</width>
+      <height>361</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_plate_fake">
+    <property name="geometry">
+     <rect>
+      <x>1110</x>
+      <y>740</y>
+      <width>441</width>
+      <height>201</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>TextLabel</string>
     </property>
    </widget>
   </widget>

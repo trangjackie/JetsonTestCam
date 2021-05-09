@@ -18,6 +18,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->scrollArea->setBackgroundRole(QPalette::Dark);
     ui->scrollArea->setVisible(false);
 
+    ui->label_plate->setScaledContents(true);
+    ui->label_plate_fake->setScaledContents(true);
     // before connect camera
     // this process have to be killed: /usr/lib/gvfs/gvfsd-gphoto2
     // we will disable this from system, not inside this program
@@ -39,11 +41,13 @@ MainWindow::MainWindow(QWidget *parent)
     }
 
     timer = new QTimer(this);
-    timer->setInterval(75); // 10 fps = 100ms
+    timer->setInterval(40); // 10 fps = 100ms
     connect(timer, SIGNAL(timeout()), this, SLOT(CapturePreview()));
 
 
     //InitALPR_SDK();
+
+    qRegisterMetaType< cv::Mat >("cv::Mat");
 
     // For image processing thread
     connect(&thread, &ImageThread::processedImage,
@@ -220,7 +224,8 @@ bool MainWindow::loadFile(const QString &fileName)
         return false;
     }
     //! [2]
-    thread.processImage(newImage);
+    if (!thread.isRunning())
+        thread.processImage(newImage);
     //testALPR2(newImage);
     setImage(newImage);
 
@@ -457,9 +462,12 @@ void MainWindow::testALPR2(QImage imgIn)
         }
     }
 }
-void MainWindow::setTextbox(QString res)
+void MainWindow::setTextbox(QString res, QImage plateimg, cv::Mat im)
 {
     ui->lineEdit_LPN->clear();
     ui->lineEdit_LPN->setText(res);
+    ui->label_plate->setPixmap(QPixmap::fromImage(plateimg));
+    ui->label_plate_fake->setPixmap(
+                QPixmap::fromImage(QImage(im.data, im.cols, im.rows, im.step, QImage::Format_Grayscale8)));
 }
 

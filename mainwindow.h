@@ -7,6 +7,7 @@
 #include <QImageReader>
 #include <QTimer>
 #include <QThread>
+#include <QMetaType>
 
 #include <gphoto2.h>
 #include <gphoto2-camera.h>
@@ -61,7 +62,7 @@ private slots:
 
     void on_pushButton_disconnectcamera_2_released();
 
-    void setTextbox(QString res);
+    void setTextbox(QString res, QImage plateimg, cv::Mat im);
 
 private:
     Ui::MainWindow *ui;

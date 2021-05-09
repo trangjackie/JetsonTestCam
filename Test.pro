@@ -57,13 +57,22 @@ unix:!macx: LIBS += -L$$PWD/../../sysroot/usr/lib/aarch64-linux-gnu/ -lopencv_dn
 unix:!macx: LIBS += -L$$PWD/../../sysroot/usr/lib/aarch64-linux-gnu/ -lopencv_face
 unix:!macx: LIBS += -L$$PWD/../../sysroot/usr/lib/aarch64-linux-gnu/ -lopencv_plot
 
-
-
 INCLUDEPATH += $$PWD/../../sysroot/usr/include/opencv4
 DEPENDPATH += $$PWD/../../sysroot/usr/include/opencv4
 
 unix:!macx: LIBS += -L$$PWD/../../sysroot/sysroot/usr/lib/aarch64-linux-gnu/ -lultimate_alpr-sdk
-
-
 INCLUDEPATH += $$PWD/../../sysroot/home/trang/Desktop/ultimateALPR-SDK/c++
 DEPENDPATH += $$PWD/../../sysroot/home/trang/Desktop/ultimateALPR-SDK/c++
+
+
+INCLUDEPATH += $$PWD/../../sysroot/usr/include
+DEPENDPATH += $$PWD/../../sysroot/usr/include
+unix:!macx: LIBS += -L$$PWD/../../sysroot/usr/lib/aarch64-linux-gnu/ -ltesseract
+unix:!macx: LIBS += -L$$PWD/../../sysroot/usr/lib/aarch64-linux-gnu/ -llept
+
+
+
+unix:!macx: LIBS += -L$$PWD/../../sysroot/usr/local/lib/ -lopenalpr
+
+INCLUDEPATH += $$PWD/../../sysroot/usr/local/include
+DEPENDPATH += $$PWD/../../sysroot/usr/local/include
