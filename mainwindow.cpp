@@ -52,6 +52,20 @@ MainWindow::MainWindow(QWidget *parent)
     // For image processing thread
     connect(&thread, &ImageThread::processedImage,
             this, &MainWindow::setTextbox);
+
+    // For gpio processing thread
+    gpio_thread = new gpio();
+    connect(gpio_thread, &gpio::processedGPIO,
+            this, &MainWindow::setTextboxGPIO);
+    if (!gpio_thread->isRunning())
+        gpio_thread->processGPIO();
+
+    // For Laser (ttyUSB0)
+    laser_controller = new laser();
+    //connect(&laser_thread, &laser::processedLaser,
+    //        this, &MainWindow::setTextboxLaser);
+    //if (!laser_thread.isRunning())
+    //    laser_thread.processLaser();
 }
 
 MainWindow::~MainWindow()
@@ -304,7 +318,7 @@ void MainWindow::on_pushButton_disconnectcamera_2_released()
 void MainWindow::InitALPR_SDK()
 {
     __jsonConfig =
-        "{"
+            "{"
         "\"debug_level\": \"info\","
         "\"debug_write_input_image_enabled\": false,"
         "\"debug_internal_data_path\": \".\","
@@ -471,3 +485,46 @@ void MainWindow::setTextbox(QString res, QImage plateimg, cv::Mat im)
                 QPixmap::fromImage(QImage(im.data, im.cols, im.rows, im.step, QImage::Format_Grayscale8)));
 }
 
+void MainWindow::setTextboxGPIO(QString res)
+{
+    QPalette pal = ui->pushButton->palette();
+    ui->textEdit->clear();
+
+    if (res=="F")
+    {
+        qDebug() <<"gpio main: "<< res;
+        ui->textEdit->setText("Falling");
+
+        pal.setColor(QPalette::Button, QColor(Qt::red));
+
+    }
+    else if (res=="r")
+    {
+        qDebug() <<"gpio main: "<< res;
+        ui->textEdit->setText("Rising");
+        pal.setColor(QPalette::Button, QColor(Qt::gray));
+    }
+    ui->pushButton->setAutoFillBackground(true);
+    ui->pushButton->setPalette(pal);
+    ui->pushButton->update();
+
+}
+
+void MainWindow::setTextboxLaser(QString res)
+{
+    ui->textEdit->clear();
+    ui->textEdit->setText(res);
+}
+
+void MainWindow::on_pushButton_laser1_clicked()
+{
+    if (laser_controller!=nullptr)
+        laser_controller->request_distance();
+}
+
+
+void MainWindow::on_pushButton_laser3_clicked()
+{
+    if (laser_controller!=nullptr)
+        laser_controller->request_speed();
+}

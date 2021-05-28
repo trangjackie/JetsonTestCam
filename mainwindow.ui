@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>2048</width>
-    <height>1024</height>
+    <width>2560</width>
+    <height>1440</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -29,7 +29,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Nhấn nút bắt đầu</string>
+     <string>Đang đo</string>
     </property>
    </widget>
    <widget class="QTextEdit" name="textEdit">
@@ -57,7 +57,7 @@
      </font>
     </property>
     <property name="text">
-     <string>Nhấn nút bắt đầu</string>
+     <string>Bắt đầu</string>
     </property>
    </widget>
    <widget class="QScrollArea" name="scrollArea">
@@ -193,13 +193,49 @@
      <string>TextLabel</string>
     </property>
    </widget>
+   <widget class="QPushButton" name="pushButton_laser1">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>1020</y>
+      <width>231</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>Lấy khoảng cách</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton_laser3">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>1160</y>
+      <width>231</width>
+      <height>81</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <pointsize>18</pointsize>
+     </font>
+    </property>
+    <property name="text">
+     <string>KT tốc độ</string>
+    </property>
+   </widget>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>2048</width>
+     <width>2560</width>
      <height>22</height>
     </rect>
    </property>

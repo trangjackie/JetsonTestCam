@@ -5,7 +5,6 @@
 #include <QThread>
 #include <QMutex>
 #include <QSize>
-#include <QThread>
 #include <QWaitCondition>
 #include <QImage>
 #include <QDebug>

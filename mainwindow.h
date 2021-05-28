@@ -30,6 +30,9 @@
 #include "alpr_utils.h"
 
 #include "imagethread.h"
+#include "gpio.h"
+#include "laser.h"
+#include "gps.h"
 
 #define PREVIEW		"preview.jpg"
 
@@ -63,6 +66,12 @@ private slots:
     void on_pushButton_disconnectcamera_2_released();
 
     void setTextbox(QString res, QImage plateimg, cv::Mat im);
+    void setTextboxGPIO(QString res);
+
+    void setTextboxLaser(QString res);
+    void on_pushButton_laser1_clicked();
+
+    void on_pushButton_laser3_clicked();
 
 private:
     Ui::MainWindow *ui;
@@ -93,5 +102,10 @@ private:
 
      ImageThread thread;
 
+     gpio *gpio_thread;
+
+     laser *laser_controller;
+
+     //gps gps_thread;
 };
 #endif // MAINWINDOW_H

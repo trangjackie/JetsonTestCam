@@ -1,4 +1,4 @@
-QT       += core gui
+QT       += core gui serialport
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -10,14 +10,20 @@ QMAKE_LFLAGS += -Wl,-rpath,"'$$ORIGIN'"
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    gpio.cpp \
+    gps.cpp \
     imagethread.cpp \
+    laser.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     alpr_utils.h \
     alpr_utils.h \
+    gpio.h \
+    gps.h \
     imagethread.h \
+    laser.h \
     mainwindow.h \
     stb_image.h
     stb_image.h
